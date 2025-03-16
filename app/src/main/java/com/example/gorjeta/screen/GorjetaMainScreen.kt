@@ -10,6 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,9 @@ fun GorjetaScreen(gorjetaViewModel: GorjetaViewModel = viewModel()) {
     val valorCustomizado = gorjetaViewModel.calcularGorjetaCustomizada()
     val valorFixo = gorjetaViewModel.calculaValorFixo()
 
+    var valorAlterado = remember { mutableStateOf(false) }
+    var valorDigitado = remember {mutableFloatStateOf(0f)}
+
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -37,9 +43,20 @@ fun GorjetaScreen(gorjetaViewModel: GorjetaViewModel = viewModel()) {
 
             OutlinedTextField(
                 value = quantidade,
-                onValueChange = { gorjetaViewModel.alterarConta(it) },
+                onValueChange = {
+                    gorjetaViewModel.alterarConta(it)
+
+                    val valor = it.toFloatOrNull() ?: 0f
+                    valorDigitado.floatValue = valor
+                    valorAlterado.value = true},
                 modifier = Modifier.weight(1f),
                 singleLine = true,
+                isError = valorAlterado.value && valorDigitado.floatValue <=0,
+                supportingText = {
+                    if (valorAlterado.value && valorDigitado.floatValue <= 0) {
+                        Text(text = "Informe uma quantidade")
+                    }
+                }
             )
         }
 
